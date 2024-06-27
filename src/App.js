@@ -1,14 +1,21 @@
 import './App.css';
 import React, { useState } from 'react';
+import { CopyBlock, dracula } from 'react-code-blocks';
 
 function App() {
 	const [fileName, setFileName] = useState('');
+	const [fileType, setFileType] = useState('');
 	const [fileContent, setFileContent] = useState();
 
-	const handleFileChange = (event) => {
+	const handleFileChange = async (event) => {
 		const file = event.target.files[0];
 		if (file) {
-			console.log(file.type);
+			let type = file.type.split('/')[file.type.split('/').length - 1];
+			if (type.includes("x-")) {
+				type = type.split('x-')[type.split('x-').length - 1]
+			}
+			console.info(type)
+			setFileType(type);
 			setFileName(file.name);
 			const reader = new FileReader();
 			reader.onload = (e) => {
@@ -18,47 +25,14 @@ function App() {
 		}
 	};
 
-	const handleCopy = () => {
-		if (navigator.clipboard) {
-			navigator.clipboard.writeText(fileContent).then(function () {
-				alert('Text copied to clipboard!');
-			}).catch(function (error) {
-				alert('Failed to copy text: ' + error);
-			});
-		} else {
-			// Fallback for older browsers
-			var textArea = document.createElement('textarea');
-			textArea.value = fileContent;
-			document.body.appendChild(textArea);
-			textArea.focus();
-			textArea.select();
-			try {
-				document.execCommand('copy');
-				alert('Text copied to clipboard!');
-			} catch (err) {
-				alert('Failed to copy text: ' + err);
-			}
-			document.body.removeChild(textArea);
-		}
-	}
-
 	return (
-		<div id='container'>
-			<h1>File Reader</h1>
-			<input type="file" onChange={handleFileChange} id='file-input' />
-			{
-				(fileName && fileContent) &&
-				<div id='code-block'>
-					<h3 id='header'>
-						<div id='header-container'>
-							{fileName}
-							<button type="button" id='copy-button' onClick={handleCopy}>Copy</button>
-						</div>
-					</h3>
-					<pre id='file-content'>{fileContent}</pre>
-				</div>
-			}
-		</div>
+		<main className='container m-auto p-3'>
+			<h1 className='text-3xl font-bold font-sans text-center'>File Reader</h1>
+			<div className='flex justify-center my-2'><input className='file:px-3 file:py-1 file:bg-blue-300 file:rounded-lg file:border-blue-400 file:border-solid file:mr-3 hover:file:bg-blue-400 transition-all border-2 border-gray-400 rounded-md p-5 border-dashed w-full md:w-3/4 lg:w-1/2' type="file" onChange={handleFileChange} /></div>
+			{(fileName && fileContent) && <div>
+				<CopyBlock text={fileContent} codeBlock={true} language={fileType} showLineNumbers={true} theme={dracula} />
+			</div>}
+		</main>
 	);
 }
 
